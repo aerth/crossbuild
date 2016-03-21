@@ -1,0 +1,148 @@
+#!/bin/sh
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2016 Earthbot
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+## Uncomment if using cgo
+#export CGO_ENABLED=1
+
+if [ -z "$1" ];then
+echo reading the source code... over-rated.
+exit 0
+fi
+
+# Word up
+echo "\n[ Earthbot CROSSBUILD ]\n[ version 1]\n"
+
+if [ -z $(which hashsum) ];then
+  echo "Installing hashsum."
+  go get -v -u github.com/aerth/hashsum
+  echo "Finished hashsum install."
+fi
+if [ -z $(which hashsum) ];then
+echo "Cant install hashsum. Maybe your GOPATH is not in your PATH.\nManually install with \n\tgo get -v -u github.com/aerth/hashsum"
+exit 1
+fi
+
+## Usage: crossbuild MyThing_v10101
+## Or: crossbuild repo-v10101 github.com/your/repo
+## Set the NOWIN environmental variable to skip windows build.
+version="$1"
+
+## Make the bin/v10101 directory
+mkdir -p "bin"/""$version"" > /dev/null 2>&1
+
+# Retain true working directory
+prd=$(pwd)
+
+### cd to where the source is, if using like "crossbuild v304 github.com/your/repo"
+if [ "$2" ]; then
+cd $GOPATH/src/$2
+fi
+
+# Use absolute build path
+name=""$prd""/"bin/""$version""/""$version""_"
+
+# So we can echo it properly
+echo "\n"Building $version in ""$name""linux-amd64
+
+# Confirmation
+echo Please type "yes" to continue.
+read CONFIRM
+if [ $CONFIRM != "yes" ]; then
+echo Thanks for trying CROSSBUILD!
+exit 0
+fi
+
+# Countdown
+echo 5
+sleep 1
+echo 4
+sleep 1
+echo 3
+sleep 1
+echo 2
+sleep 1
+echo 1
+sleep 1
+
+
+echo Building: osx amd64
+
+GOOS=darwin GOARCH=amd64 go build -o "$name"osx-amd64
+
+echo Building: osx 386
+
+GOOS=darwin GOARCH=386 go build -o "$name"osx-386
+
+echo Building: freebsd amd64
+
+GOOS=freebsd GOARCH=amd64 go build -o "$name"freebsd-amd64
+
+echo Building: freebsd 386
+
+GOOS=freebsd GOARCH=386 go build -o "$name"freebsd-386
+
+echo Building: netbsd amd64
+
+GOOS=netbsd GOARCH=amd64 go build -o "$name"netbsd-amd64
+
+echo Building: netbsd 386
+
+GOOS=netbsd GOARCH=386 go build -o "$name"netbsd-386
+
+echo Building: openbsd amd64
+
+GOOS=openbsd GOARCH=amd64 go build -o "$name"openbsd-amd64
+
+echo Building: openbsd 386
+
+GOOS=openbsd GOARCH=386 go build -o "$name"openbsd-386
+
+echo Building: linux arm
+
+GOOS=linux GOARCH=arm go build -o "$name"linux-arm
+
+echo Building: linux amd64
+
+GOOS=linux GOARCH=amd64 go build -o "$name"linux-amd64
+
+echo Building: linux 386
+
+GOOS=linux GOARCH=386 go build -o "$name"linux-386
+
+if [ -z "$NOWIN"]; then
+echo Building: windows amd64
+
+GOOS=windows GOARCH=amd64 go build -o "$name"windows-amd64.exe
+
+echo Building: windows 386
+
+GOOS=windows GOARCH=386 go build -o "$name"windows-386.exe
+fi
+
+
+
+
+
+echo All done.
+exit 0
