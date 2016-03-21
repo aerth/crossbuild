@@ -66,12 +66,11 @@ name=""$prd""/"bin/""$version""/""$version""_"
 echo "\n"Building $version in ""$name""linux-amd64
 
 # Confirmation
-echo Please type "yes" to continue.
-read CONFIRM
-if [ $CONFIRM != "yes" ]; then
-echo Thanks for trying CROSSBUILD!
-exit 0
-fi
+echo "Type go to build!"
+read REPLY
+echo    # (optional) move to a new line
+if [ "$REPLY" = go ]
+then
 
 # Countdown
 echo 5
@@ -140,9 +139,20 @@ echo Building: windows 386
 GOOS=windows GOARCH=386 go build -o "$name"windows-386.exe
 fi
 
+FRESHBINS=$prd"/bin/"$version
+echo Starting hashsum.
+cd $FRESHBINS
+for i in $(ls); do hashsum $i; done
 
-
-
+echo Zipping Up.
+mkdir ../../package/
+for i in $(ls); do tar czpf ../../package/$i.tgz $i ../../README* ../../LICENSE*; done
 
 echo All done.
+exit 0
+else
+  echo Thanks for trying CROSSBUILD!
+  exit 0
+fi
+echo How did we get here?
 exit 0
